@@ -1,102 +1,108 @@
-```html
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>عندك مفاجأة 🎁</title>
-
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>مفاجأة إلك 🎁</title>
 <style>
 * { box-sizing: border-box; }
-
 body {
-    margin: 0;
-    min-height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-    font-family: Arial, sans-serif;
-    color: white;
-    background: linear-gradient(135deg, #191526, #382447, #20182f);
+  margin: 0; min-height: 100vh; display: grid;
+  place-items: center; font-family: Arial, sans-serif;
+  color: white; text-align: center;
+  background: linear-gradient(135deg,#191526,#382447,#20182f);
 }
-
 .card {
-    width: 90%;
-    max-width: 430px;
-    padding: 35px 22px;
-    border: 1px solid #a778b8;
-    border-radius: 25px;
-    background: rgba(255,255,255,0.06);
-    box-shadow: 0 0 35px #0004;
+  width: 90%; max-width: 500px; padding: 30px 22px;
+  border: 1px solid #a778b8; border-radius: 24px;
+  background: #ffffff0b;
 }
-
-.gift { font-size: 75px; }
-
 h1 { color: #f0b4f2; }
-
-p {
-    font-size: 18px;
-    line-height: 1.8;
-}
-
+p { line-height: 1.9; }
 button {
-    border: none;
-    border-radius: 30px;
-    padding: 15px 25px;
-    margin-top: 15px;
-    background: #e9a9ed;
-    color: #24172c;
-    font-size: 18px;
-    cursor: pointer;
+  border: 0; border-radius: 30px; padding: 14px 22px;
+  margin: 8px; background: #e9a9ed; color: #24172c;
+  font-size: 17px; cursor: pointer;
 }
-
-#surprise { display: none; }
-
-.heart {
-    font-size: 35px;
-    animation: bounce 1s infinite alternate;
+video, canvas {
+  width: 100%; margin-top: 15px; border-radius: 14px;
+  background: #08070a;
 }
-
-@keyframes bounce {
-    from { transform: scale(1); }
-    to { transform: scale(1.2); }
-}
+[hidden] { display: none !important; }
+#message { color: #f0b4f2; }
 </style>
 </head>
-
 <body>
-<div class="card">
-    <div class="gift" id="gift">🎁</div>
+<main class="card">
+  <div style="font-size:65px" id="emoji">🎁</div>
+  <section id="surprise">
+    <h1>عندك مفاجأة سرية! 👀</h1>
+    <p>في إشي إلك هون... عندك فضول تعرف شو هو؟ 🤭</p>
+    <button id="reveal">اكشف المفاجأة 💗</button>
+  </section>
 
-    <div id="start">
-        <h1>عندك مفاجأة سرية! 👀</h1>
-        <p>في إشي إلك هون... بس لازم تضغط عشان تعرف شو هو 🤭</p>
-        <button onclick="reveal()">اكشف المفاجأة 💗</button>
-    </div>
-
-    <div id="surprise">
-        <div class="heart">💗</div>
-        <h1>انمسكتتت 😂</h1>
-        <p>فضولك ما خلاك تقاوم وتضغط، صح؟ 😭😂</p>
-        <p>مبروك! ربحت لقب أكثر شخص فضولي اليوم 🏆</p>
-        <button onclick="again()">أعيد المقلب؟ 🤣</button>
-    </div>
-</div>
+  <section id="result" hidden>
+    <h1>انمسكتتت 😂</h1>
+    <p>فضولك غلبك! ربحت لقب أكثر شخص فضولي اليوم 🏆</p>
+    <p>بدك تجرب الكاميرا؟ افتحها بنفسك بعد الموافقة.</p>
+    <button id="open">📸 افتح الكاميرا</button>
+    <video id="camera" autoplay playsinline hidden></video>
+    <button id="take" hidden>التقط صورة</button>
+    <canvas id="photo" hidden></canvas>
+    <button id="save" hidden>احفظ الصورة</button>
+    <p id="message" role="status"></p>
+  </section>
+</main>
 
 <script>
-function reveal() {
-    document.getElementById("start").style.display = "none";
-    document.getElementById("surprise").style.display = "block";
-    document.getElementById("gift").textContent = "🤭";
-}
+const $ = id => document.getElementById(id);
+let stream = null;
 
-function again() {
-    document.getElementById("surprise").style.display = "none";
-    document.getElementById("start").style.display = "block";
-    document.getElementById("gift").textContent = "🎁";
-}
-</script>
-</body>
-</html>
-```
+$("reveal").addEventListener("click", () => {
+  $("surprise").hidden = true;
+  $("result").hidden = false;
+  $("emoji").textContent = "🤭";
+});
+
+$("open").addEventListener("click", async () => {
+  if (!navigator.mediaDevices?.getUserMedia) {
+    $("message").textContent =
+      "افتح الرابط عبر HTTPS وبمتصفح يدعم الكاميرا.";
+    return;
+  }
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: "user" }, audio: false
+    });
+    $("camera").srcObject = stream;
+    $("camera").hidden = false;
+    $("take").hidden = false;
+    $("message").textContent =
+      "الكاميرا تعمل. الصورة لن تُرسل إلى أي مكان.";
+  } catch {
+    $("message").textContent =
+      "لم تُفتح الكاميرا. تأكد من السماح باستخدامها.";
+  }
+});
+
+$("take").addEventListener("click", () => {
+  const video = $("camera");
+  if (!stream || !video.videoWidth) return;
+  const canvas = $("photo");
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+  canvas.getContext("2d").drawImage(video, 0, 0);
+  canvas.hidden = false;
+  $("save").hidden = false;
+  $("message").textContent = "تم التقاط الصورة على جهازك.";
+});
+
+$("save").addEventListener("click", () => {
+  const link = document.createElement("a");
+  link.download = "my-photo.png";
+  link.href = $("photo").toDataURL("image/png");
+  link.click();
+});
+
+window.addEventListener("pagehide", () => {
+  if (stream
